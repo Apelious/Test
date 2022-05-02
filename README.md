@@ -3,7 +3,7 @@
 <h2><font color="red">1、数据库设计表格</font></h2>
 <br>
 <ul>
-<li><strong><font color="orange">Song</font></strong> (<font color="orange"><em>Song_id</font></em>, Song_name, Lrc, Album, Release_time, Song_tag)</li>
+<li><strong><font color="orange">Song</font></strong> (<font color="orange"><em>Song_id</font></em>, Song_name, Lrc, Album, Release_time, Song_tag, Isupload)</li>
 <br>
 <li><strong><font color="orange">Song_version</font></strong> (<font color="orange"><em>Song_id, Quality</font></em>, Song_url)</li>
 <br>
@@ -11,9 +11,9 @@
 <br>
 <li><strong><font color="orange">MapSS</font></strong> (<font color="orange"><em>Song_id, Singer_id</font></em>)</li>
 <br>
-<li><strong><font color="orange">Singer</font></strong> (<font color="orange"><em>Singer_id</font></em>, Singer_name, Singer_sex, Country, Singer_introduction, Singer_photo)</li>
+<li><strong><font color="orange">Singer</font></strong> (<font color="orange"><em>Singer_id</font></em>, Singer_name, Singer_gender, Country, Singer_introduction, Singer_photo)</li>
 <br>
-<li><strong><font color="orange">Users</font></strong> (<font color="orange"><em>User_id</font></em>, User_name, User_password, User_sex, Phone_number, Email, Birthday, User_introduction, Location, User_photo, Create_time)</li>
+<li><strong><font color="orange">Users</font></strong> (<font color="orange"><em>User_id</font></em>, User_name, User_password, User_gender, Phone_number, Email, Birthday, User_introduction, Location, User_photo, Create_time)</li>
 <br>
 <li> <strong><font color="orange">Comments</font></strong> (<font color="orange"><em>Comment_id</font></em>, Song_id, Comment_time, User_id, Content, Comment_like)</li>
 <br>
@@ -67,7 +67,8 @@
 >>Release_time------------------------歌曲发行时间
 >>
 >>Song_tag------------------------歌曲风格标签
-
+>>
+>>Isupload------------------------歌曲是否是用户上传的
 </li>
 <br>
 <li>
@@ -112,7 +113,7 @@
 > >
 > >Singer_name------------------------歌手名字
 > >
-> >Singer_sex------------------------歌手性别
+> >Singer_gender------------------------歌手性别
 > >
 > >Country------------------------歌手国籍
 > >
@@ -132,7 +133,7 @@
 >>
 > >User_password------------------------用户密码
 > >
-> >User_sex------------------------用户性别
+> >User_gender------------------------用户性别
 > >
 > >Phone_number------------------------用户电话号码
 > >
@@ -298,6 +299,7 @@ Lrc		varchar(255),
 Album		varchar(50),
 Release_time	date,
 Song_tag	enum('流行','说唱','国风','摇滚','电子','民谣','R&B','轻音乐','古典','爵士') NOT NULL,
+Isupload    enum('YES', 'NO') NOT NULL ,
 primary key (Song_id));
 ~~~
 </li>
@@ -322,7 +324,7 @@ foreign key (Song_id) references Song(Song_id) On delete cascade);
 create table Singer
 (Singer_id	int unsigned AUTO_INCREMENT NOT NULL,
 Singer_name  varchar(20) NOT NULL,
-Singer_sex	enum('男','女','不公开') NOT NULL,
+Singer_gender	enum('男','女','不公开') NOT NULL,
 Country		varchar(10),
 Singer_introduction varchar(255),
 Singer_photo varchar(225),
@@ -338,7 +340,7 @@ create table Users
 (User_id  int unsigned AUTO_INCREMENT NOT NULL,
 User_name	varchar(15) NOT NULL,
 User_password  varchar(20) NOT NULL,
-User_sex		enum('男','女','不公开') NOT NULL,
+User_gender		enum('男','女','不公开') NOT NULL,
 Phone_number    tinyint,
 Email			varchar(30),
 Birthday		date,
@@ -536,13 +538,13 @@ foreign key (User_id) references Users (User_id) on delete cascade);
 功能：用户注册
 类型：POST
 URL：users/signin
-提供参数：username, userpassword, usersex, phonenummber, email, birthday, userintroduction, location, userphoto
+提供参数：username, userpassword, usergender, phonenummber, email, birthday, userintroduction, location, userphoto
 返回参数：backmsg{userid}
 返回信息:  【code = 0, type = success, msg = "注册成功"】	
 	      【code = 1, type = error, msg = "注册失败"】
 	      【code = 2, type = error, msg = "用户名已存在"】
 ~~~
->   |参数：|username|userpassword|usersex|phonenummber|email|birthday|userintroduction|location|userphoto|
+>   |参数：|username|userpassword|usergender|phonenummber|email|birthday|userintroduction|location|userphoto|
 >   |-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
 >   |必需：|是|是|是|否|否|否|否|否|否|
 </li>
@@ -560,7 +562,7 @@ URL：users/signin
 类型：POST
 URL：users/login
 提供参数：username, userpassword
-返回参数：backmsg{(userid, username, userpassword, usersex, phonenumber, email, birthday, userintroduction, location, userphoto, createtime), (collectid, collecttitle, collectphoto), (songid, songname, singerid, singername, permission, check)}
+返回参数：backmsg{(userid, username, userpassword, usergender, phonenumber, email, birthday, userintroduction, location, userphoto, createtime), (collectid, collecttitle, collectphoto), (songid, songname, singerid, singername, permission, check)}
 返回信息：【code = 0, type = success, msg = "登陆成功"】	
 	【code = 1, type = error, msg = "用户名或密码错误"】
 ~~~
@@ -581,7 +583,7 @@ URL：users/login
 功能：更新用户信息
 类型：POST
 URL：users/update/infomation
-提供参数：userid, username, userpassword, usersex, phonenumber, email, birthday, userintroduction, location, userphoto
+提供参数：userid, username, userpassword, usergender, phonenumber, email, birthday, userintroduction, location, userphoto
 返回参数：无
 返回信息：【code = 0, type = success, msg = "修改成功"】	
 	【code = 1, type = error, msg = "用户名或密码错误"】
@@ -647,7 +649,7 @@ URL：search/content/bycollectid
 类型：GET
 URL：search/user/byid
 提供参数：userid
-返回参数：(userid, username, usersex, phonenumber, email, birthday, userintroduction, location, userphoto, createtime), (userid, collectid, collecttitle, collectphoto) (songid, songname, singerid, singername, permission, check)
+返回参数：(userid, username, usergender, phonenumber, email, birthday, userintroduction, location, userphoto, createtime), (userid, collectid, collecttitle, collectphoto) (songid, songname, singerid, singername, permission, check)
 返回信息：无
 ~~~
 >   |参数：|userid|
@@ -710,7 +712,7 @@ URL：search/song/byname
 类型：GET
 URL：search/singer/byname
 提供参数：singername
-返回参数：singerid, singername, singersex, country
+返回参数：singerid, singername, singergender, country
 返回信息：无
 ~~~
 >   |参数：|songname|
@@ -731,7 +733,7 @@ URL：search/singer/byname
 类型：GET
 URL：search/singer/bysingerid
 提供参数：singerid
-返回参数：(singerid, singername, singerphoto, singersex, country, singerintroduction), (songid, songname)
+返回参数：(singerid, singername, singerphoto, singergender, country, singerintroduction), (songid, songname)
 返回信息：无
 ~~~
 >   |参数：|singerid|
